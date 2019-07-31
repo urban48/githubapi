@@ -40,6 +40,7 @@ impl GitHubApi {
         }
     }
 
+    /// Fetches all pull requests for a repository.
     pub fn get_pull_requests(
         &self,
         owner: &str,
