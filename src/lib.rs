@@ -40,6 +40,20 @@ impl GitHubApi {
         }
     }
 
+    pub fn get_rate_limit(&self) -> Result<RateLimit, GitHubApiError> {
+        let method = format!("rate_limit");
+        let result = self.api_get_call(&method)?;
+
+        match serde_json::from_str(&result) {
+            Ok(value) => Ok(value),
+            Err(error) => Err(GitHubApiError::JsonError(error)),
+        }
+    }
+
+    pub fn get_tags(&self) {}
+
+    pub fn get_repos(&self) {}
+
     /// Fetches all pull requests for a repository.
     pub fn get_pull_requests(
         &self,
@@ -47,7 +61,6 @@ impl GitHubApi {
         repository: &str,
     ) -> Result<Vec<PullRequest>, GitHubApiError> {
         let method = format!("repos/{}/{}/pulls", owner, repository);
-
         let result = self.api_get_call(&method)?;
 
         match serde_json::from_str(&result) {
@@ -57,6 +70,8 @@ impl GitHubApi {
     }
 }
 
+// region Enums
+
 #[derive(Debug, Deserialize)]
 pub enum OpenClosed {
     #[serde(rename(deserialize = "open"))]
@@ -65,6 +80,10 @@ pub enum OpenClosed {
     Closed,
 }
 
+// endregion
+
+// region PullRequest
+
 #[derive(Debug, Deserialize)]
 pub struct PullRequest {
     url: String,
@@ -72,6 +91,33 @@ pub struct PullRequest {
     title: String,
     state: OpenClosed,
 }
+
+// endregion
+
+// region RateLimit
+
+#[derive(Debug, Deserialize)]
+pub struct RateLimit {
+    pub resources: RateLimitResources,
+    pub rate: LimitRemainingReset,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct RateLimitResources {
+    pub core: LimitRemainingReset,
+    pub search: LimitRemainingReset,
+    pub graphql: LimitRemainingReset,
+    pub integration_manifest: LimitRemainingReset,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LimitRemainingReset {
+    pub limit: u32,
+    pub remaining: u32,
+    pub reset: u64
+}
+
+// endregion
 
 #[cfg(test)]
 mod tests {
