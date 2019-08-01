@@ -13,6 +13,10 @@ fn main() {
     let password = env::var("GH_PASS").expect("GH_PASS not defined.");
 
     let gh = GitHubApi::new(&username, &password);
+
+    // This is the "primitive" pagination approach. It's actually very simple.
+    // The alternative is to use an iterator, which you'll find in `get_tags.rs`.
+
     let mut page = gh.get_releases("sous-chefs", "postgresql").unwrap();
     println!("{:#?}", page);
 
