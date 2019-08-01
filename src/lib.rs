@@ -59,11 +59,30 @@ impl GitHubApi {
             limits: limit_remaining_reset,
             owner: None,
             repository: None,
-            next_page: None
+            next_page: None,
         })
     }
 
     // region Tags
+
+    pub fn get_tags(
+        &self,
+        owner: &str,
+        repository: &str,
+    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
+        self.get_tags_page(owner, repository, 1)
+    }
+
+    pub fn get_tags_next<T>(
+        &self,
+        previous: &ApiResponse<T>,
+    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
+        let owner = &previous.owner.clone().unwrap();
+        let repository = &previous.repository.clone().unwrap();
+        let next_page = previous.next_page.unwrap();
+
+        self.get_tags_page(owner, repository, next_page)
+    }
 
     fn get_tags_page(
         &self,
@@ -83,34 +102,34 @@ impl GitHubApi {
         })
     }
 
-    pub fn get_tags(
+    // endregion
+
+    // region Releases
+
+    pub fn get_releases(
         &self,
         owner: &str,
         repository: &str,
-    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
-        self.get_tags_page(owner, repository, 1)
+    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
+        self.get_releases_page(owner, repository, 1)
     }
 
-    pub fn get_tags_next<T>(
+    pub fn get_releases_next<T>(
         &self,
-        previous: &ApiResponse<T>
-    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
+        previous: &ApiResponse<T>,
+    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
         let owner = &previous.owner.clone().unwrap();
         let repository = &previous.repository.clone().unwrap();
         let next_page = previous.next_page.unwrap();
 
-        self.get_tags_page(owner, repository, next_page)
+        self.get_releases_page(owner, repository, next_page)
     }
-
-    // endregion
-
-    // region Releases
 
     fn get_releases_page(
         &self,
         owner: &str,
         repository: &str,
-        page: u64
+        page: u64,
     ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
         let method = format!("repos/{}/{}/releases", owner, repository);
         let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
@@ -124,27 +143,7 @@ impl GitHubApi {
         })
     }
 
-    pub fn get_releases(
-        &self,
-        owner: &str,
-        repository: &str,
-    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
-        self.get_releases_page(owner, repository, 1)
-    }
-
-    pub fn get_releases_next<T>(
-        &self,
-        previous: &ApiResponse<T>
-    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
-        let owner = &previous.owner.clone().unwrap();
-        let repository = &previous.repository.clone().unwrap();
-        let next_page = previous.next_page.unwrap();
-
-        self.get_releases_page(owner, repository, next_page)
-    }
-
     // endregion
-
 }
 
 // region Helpers
@@ -246,7 +245,7 @@ where
 
 // region Envelopes
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ApiResponse<T> {
     pub result: T,
     pub limits: Option<LimitRemainingReset>,
@@ -301,7 +300,7 @@ pub struct RateLimitResources {
     pub integration_manifest: LimitRemainingReset,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct LimitRemainingReset {
     pub limit: u64,
     pub remaining: u64,
@@ -312,7 +311,7 @@ pub struct LimitRemainingReset {
 
 // region TagsResponse
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TagsResponse {
     name: String,
     zipball_url: String,
@@ -321,7 +320,7 @@ pub struct TagsResponse {
     node_id: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TagsCommit {
     sha: String,
     url: String,
