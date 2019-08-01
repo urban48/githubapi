@@ -18,7 +18,6 @@ impl GitHubApi {
         }
     }
 
-
     fn api_get_call(
         &self,
         method: &str,
@@ -75,21 +74,6 @@ impl GitHubApi {
         repository: &str,
     ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
         let method = format!("repos/{}/{}/releases", owner, repository);
-        let (text, limit_remaining_reset) = self.api_get_call(&method)?;
-
-        Ok(ApiResponse {
-            result: parse_json(&text)?,
-            limits: limit_remaining_reset,
-        })
-    }
-
-    /// Fetches all pull requests for a repository.
-    pub fn get_pull_requests(
-        &self,
-        owner: &str,
-        repository: &str,
-    ) -> Result<ApiResponse<Vec<PullRequestResponse>>, GitHubApiError> {
-        let method = format!("repos/{}/{}/pulls", owner, repository);
         let (text, limit_remaining_reset) = self.api_get_call(&method)?;
 
         Ok(ApiResponse {
@@ -167,18 +151,6 @@ pub enum OpenClosed {
 
 // endregion
 
-// region PullRequestResponse
-
-#[derive(Debug, Deserialize)]
-pub struct PullRequestResponse {
-    url: String,
-    id: u32,
-    title: String,
-    state: OpenClosed,
-}
-
-// endregion
-
 // region RateLimitResponse
 
 #[derive(Debug, Deserialize)]
@@ -237,7 +209,7 @@ pub struct ReleasesResponse {
     target_commitish: String,
     name: String,
     draft: bool,
-    author: ReleasesPerson,
+    author: GenericPerson,
     prerelease: bool,
     created_at: String,
     published_at: String,
@@ -254,7 +226,7 @@ pub struct ReleasesAsset {
     node_id: String,
     name: String,
     label: String,
-    uploader: ReleasesPerson,
+    uploader: GenericPerson,
     content_type: String,
     state: String,
     size: u64,
@@ -265,7 +237,7 @@ pub struct ReleasesAsset {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct ReleasesPerson {
+pub struct GenericPerson {
     login: String,
     id: u64,
     node_id: String,
