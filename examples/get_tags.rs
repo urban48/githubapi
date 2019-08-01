@@ -13,7 +13,13 @@ fn main() {
     let password = env::var("GH_PASS").expect("GH_PASS not defined.");
 
     let gh = GitHubApi::new(&username, &password);
-    let pulls = gh.get_tags("sous-chefs", "postgresql");
 
-    println!("{:#?}", pulls);
+    let mut page = gh.get_tags("sous-chefs", "postgresql").unwrap();
+    println!("{:#?}", page);
+
+    while page.next_page.is_some() {
+        page = gh.get_tags_next(&page).unwrap();
+        println!("{:#?}", page);
+    }
+
 }

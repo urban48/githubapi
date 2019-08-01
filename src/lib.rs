@@ -1,9 +1,13 @@
+use lazy_static::lazy_static;
+
 use reqwest::Client;
 use serde::Deserialize;
 
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::Error as ReqwestError;
 use serde_json::error::Error as JsonError;
+
+use regex::Regex;
 
 pub struct GitHubApi {
     username: String,
@@ -21,8 +25,9 @@ impl GitHubApi {
     fn api_get_call(
         &self,
         method: &str,
-    ) -> Result<(String, Option<LimitRemainingReset>), GitHubApiError> {
-        let url = format!("https://api.github.com/{}", method);
+        page: u64,
+    ) -> Result<(String, Option<LimitRemainingReset>, Option<u64>), GitHubApiError> {
+        let url = format!("https://api.github.com/{}?page={}", method, page);
 
         let result = Client::new()
             .get(&url)
@@ -33,11 +38,12 @@ impl GitHubApi {
         match result {
             Ok(mut response) => {
                 let headers = response.headers();
+                let limit_remaining_reset = headers.get_rate_limits();
 
-                let limit_remaining_reset = get_limits_from_headers(headers);
+                let next_page = headers.get_next_page();
 
                 match response.text() {
-                    Ok(text) => Ok((text, limit_remaining_reset)),
+                    Ok(text) => Ok((text, limit_remaining_reset, next_page)),
                     Err(error) => Err(GitHubApiError::ReqwestError(error)),
                 }
             }
@@ -46,11 +52,32 @@ impl GitHubApi {
     }
 
     pub fn get_rate_limit(&self) -> Result<ApiResponse<RateLimitResponse>, GitHubApiError> {
-        let (text, limit_remaining_reset) = self.api_get_call("rate_limit")?;
+        let (text, limit_remaining_reset, _) = self.api_get_call("rate_limit", 1)?;
 
         Ok(ApiResponse {
             result: parse_json(&text)?,
             limits: limit_remaining_reset,
+            owner: None,
+            repository: None,
+            next_page: None
+        })
+    }
+
+    fn get_tags_page(
+        &self,
+        owner: &str,
+        repository: &str,
+        page: u64,
+    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
+        let method = format!("repos/{}/{}/tags", owner, repository);
+        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
+
+        Ok(ApiResponse {
+            result: parse_json(&text)?,
+            limits: limit_remaining_reset,
+            owner: Some(owner.to_string()),
+            repository: Some(repository.to_string()),
+            next_page,
         })
     }
 
@@ -59,13 +86,18 @@ impl GitHubApi {
         owner: &str,
         repository: &str,
     ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
-        let method = format!("repos/{}/{}/tags", owner, repository);
-        let (text, limit_remaining_reset) = self.api_get_call(&method)?;
+        self.get_tags_page(owner, repository, 1)
+    }
 
-        Ok(ApiResponse {
-            result: parse_json(&text)?,
-            limits: limit_remaining_reset,
-        })
+    pub fn get_tags_next<T>(
+        &self,
+        previous: &ApiResponse<T>
+    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
+        let owner = &previous.owner.clone().unwrap();
+        let repository = &previous.repository.clone().unwrap();
+        let next_page = previous.next_page.unwrap();
+
+        self.get_tags_page(owner, repository, next_page)
     }
 
     pub fn get_releases(
@@ -74,45 +106,106 @@ impl GitHubApi {
         repository: &str,
     ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
         let method = format!("repos/{}/{}/releases", owner, repository);
-        let (text, limit_remaining_reset) = self.api_get_call(&method)?;
+        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, 1)?;
 
         Ok(ApiResponse {
             result: parse_json(&text)?,
             limits: limit_remaining_reset,
+            owner: Some(owner.to_string()),
+            repository: Some(repository.to_string()),
+            next_page,
         })
     }
 }
 
 // region Helpers
 
-fn get_limits_from_headers(headers: &HeaderMap<HeaderValue>) -> Option<LimitRemainingReset> {
-    let limit = get_u64_from_headers(headers, "x-ratelimit-limit")?;
-    let remaining = get_u64_from_headers(headers, "x-ratelimit-remaining")?;
-    let reset = get_u64_from_headers(headers, "x-ratelimit-reset")?;
+trait HeaderMapExtensions {
+    fn get_as_u64(&self, key: &str) -> Option<u64>;
 
-    Some(LimitRemainingReset {
-        limit,
-        remaining,
-        reset,
-    })
+    fn get_rate_limits(&self) -> Option<LimitRemainingReset>;
+    fn is_paginated(&self) -> bool;
+    fn get_pagination(&self) -> Option<Vec<Pagination>>;
+    fn get_next_page(&self) -> Option<u64>;
 }
 
-fn get_u64_from_headers(headers: &HeaderMap, key: &str) -> Option<u64> {
-    match headers.get(key) {
-        Some(header_value) => match header_value.to_str() {
-            Ok(string_value) => match string_value.parse() {
-                Ok(value) => Some(value),
+impl HeaderMapExtensions for HeaderMap<HeaderValue> {
+    fn get_as_u64(&self, key: &str) -> Option<u64> {
+        match self.get(key) {
+            Some(header_value) => match header_value.to_str() {
+                Ok(string_value) => match string_value.parse() {
+                    Ok(value) => Some(value),
+                    _ => None,
+                },
                 _ => None,
             },
             _ => None,
-        },
-        _ => None,
+        }
+    }
+
+    fn get_rate_limits(&self) -> Option<LimitRemainingReset> {
+        let limit = self.get_as_u64("x-ratelimit-limit")?;
+        let remaining = self.get_as_u64("x-ratelimit-remaining")?;
+        let reset = self.get_as_u64("x-ratelimit-reset")?;
+
+        Some(LimitRemainingReset {
+            limit,
+            remaining,
+            reset,
+        })
+    }
+
+    fn is_paginated(&self) -> bool {
+        self.get("Link").is_some()
+    }
+
+    fn get_pagination(&self) -> Option<Vec<Pagination>> {
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r#"<.*?\?page=(\d+)>; rel="(.*?)""#).unwrap();
+        }
+
+        match self.get("Link") {
+            None => None,
+            Some(header) => match header.to_str() {
+                Ok(data) => Some(
+                    RE.captures_iter(data)
+                        .map(|it| {
+                            (
+                                it.get(2).unwrap().as_str(),
+                                it.get(1).unwrap().as_str().parse::<u64>().unwrap(),
+                            )
+                        })
+                        .map(|(direction, number)| match direction {
+                            "first" => Pagination::First(number),
+                            "prev" => Pagination::Previous(number),
+                            "next" => Pagination::Next(number),
+                            "last" => Pagination::Last(number),
+                            other => Pagination::Undefined(other.to_string(), number),
+                        })
+                        .collect::<Vec<_>>(),
+                ),
+                _ => None,
+            },
+        }
+    }
+
+    fn get_next_page(&self) -> Option<u64> {
+        let result = self.get_pagination()?.into_iter().find(|it| match it {
+            Pagination::Next(_) => true,
+            _ => false,
+        })?;
+
+        if let Pagination::Next(value) = result {
+            Some(value)
+        } else {
+            None
+        }
     }
 }
 
 fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
-    where
-        T: Deserialize<'a>,
+where
+    T: Deserialize<'a>,
 {
     match serde_json::from_str(&text) {
         Ok(value) => Ok(value),
@@ -126,8 +219,11 @@ fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
 
 #[derive(Debug)]
 pub struct ApiResponse<T> {
-    result: T,
-    limits: Option<LimitRemainingReset>,
+    pub result: T,
+    pub limits: Option<LimitRemainingReset>,
+    pub owner: Option<String>,
+    pub repository: Option<String>,
+    pub next_page: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -147,6 +243,15 @@ pub enum OpenClosed {
     Open,
     #[serde(rename(deserialize = "closed"))]
     Closed,
+}
+
+#[derive(Debug)]
+pub enum Pagination {
+    First(u64),
+    Previous(u64),
+    Next(u64),
+    Last(u64),
+    Undefined(String, u64),
 }
 
 // endregion
