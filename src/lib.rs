@@ -50,9 +50,13 @@ impl GitHubApi {
         }
     }
 
-    pub fn get_tags(&self) {}
+    pub fn get_tags(&self) -> Result<(), GitHubApiError> {
+        Ok(())
+    }
 
-    pub fn get_repos(&self) {}
+    pub fn get_repos(&self) -> Result<(), GitHubApiError> {
+        Ok(())
+    }
 
     /// Fetches all pull requests for a repository.
     pub fn get_pull_requests(
@@ -114,7 +118,7 @@ pub struct RateLimitResources {
 pub struct LimitRemainingReset {
     pub limit: u32,
     pub remaining: u32,
-    pub reset: u64
+    pub reset: u64,
 }
 
 // endregion
