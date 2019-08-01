@@ -41,21 +41,32 @@ impl GitHubApi {
         }
     }
 
-    pub fn get_rate_limit(&self) -> Result<RateLimitResponse, GitHubApiError> {
-        let result = self.api_get_call("rate_limit")?;
-
-        match serde_json::from_str(&result) {
+    fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
+    where
+        T: Deserialize<'a>,
+    {
+        match serde_json::from_str(&text) {
             Ok(value) => Ok(value),
             Err(error) => Err(GitHubApiError::JsonError(error)),
         }
     }
 
-    pub fn get_tags(&self) -> Result<TagsResponse, GitHubApiError> {
-        Err(GitHubApiError::NotImplemented)
+    pub fn get_rate_limit(&self) -> Result<RateLimitResponse, GitHubApiError> {
+        GitHubApi::parse_json(&self.api_get_call("rate_limit")?)
     }
 
-    pub fn get_repos(&self) -> Result<ReposResponse, GitHubApiError> {
-        Err(GitHubApiError::NotImplemented)
+    pub fn get_tags(&self, owner: &str, repository: &str) -> Result<TagsResponse, GitHubApiError> {
+        let method = format!("repos/{}/{}/tags", owner, repository);
+        GitHubApi::parse_json(&self.api_get_call(&method)?)
+    }
+
+    pub fn get_releases(
+        &self,
+        owner: &str,
+        repository: &str,
+    ) -> Result<ReleasesResponse, GitHubApiError> {
+        let method = format!("repos/{}/{}/releases", owner, repository);
+        GitHubApi::parse_json(&self.api_get_call(&method)?)
     }
 
     /// Fetches all pull requests for a repository.
@@ -65,12 +76,7 @@ impl GitHubApi {
         repository: &str,
     ) -> Result<Vec<PullRequestResponse>, GitHubApiError> {
         let method = format!("repos/{}/{}/pulls", owner, repository);
-        let result = self.api_get_call(&method)?;
-
-        match serde_json::from_str(&result) {
-            Ok(value) => Ok(value),
-            Err(error) => Err(GitHubApiError::JsonError(error)),
-        }
+        GitHubApi::parse_json(&self.api_get_call(&method)?)
     }
 }
 
@@ -130,10 +136,10 @@ pub struct TagsResponse {}
 
 // endregion
 
-// region ReposResponse
+// region ReleasesResponse
 
 #[derive(Debug, Deserialize)]
-pub struct ReposResponse {}
+pub struct ReleasesResponse {}
 
 // endregion
 
