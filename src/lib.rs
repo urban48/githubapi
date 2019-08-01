@@ -55,7 +55,11 @@ impl GitHubApi {
         GitHubApi::parse_json(&self.api_get_call("rate_limit")?)
     }
 
-    pub fn get_tags(&self, owner: &str, repository: &str) -> Result<TagsResponse, GitHubApiError> {
+    pub fn get_tags(
+        &self,
+        owner: &str,
+        repository: &str,
+    ) -> Result<Vec<TagsResponse>, GitHubApiError> {
         let method = format!("repos/{}/{}/tags", owner, repository);
         GitHubApi::parse_json(&self.api_get_call(&method)?)
     }
@@ -64,7 +68,7 @@ impl GitHubApi {
         &self,
         owner: &str,
         repository: &str,
-    ) -> Result<ReleasesResponse, GitHubApiError> {
+    ) -> Result<Vec<ReleasesResponse>, GitHubApiError> {
         let method = format!("repos/{}/{}/releases", owner, repository);
         GitHubApi::parse_json(&self.api_get_call(&method)?)
     }
