@@ -63,6 +63,8 @@ impl GitHubApi {
         })
     }
 
+    // region Tags
+
     fn get_tags_page(
         &self,
         owner: &str,
@@ -100,13 +102,18 @@ impl GitHubApi {
         self.get_tags_page(owner, repository, next_page)
     }
 
-    pub fn get_releases(
+    // endregion
+
+    // region Releases
+
+    fn get_releases_page(
         &self,
         owner: &str,
         repository: &str,
+        page: u64
     ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
         let method = format!("repos/{}/{}/releases", owner, repository);
-        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, 1)?;
+        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
 
         Ok(ApiResponse {
             result: parse_json(&text)?,
@@ -116,6 +123,28 @@ impl GitHubApi {
             next_page,
         })
     }
+
+    pub fn get_releases(
+        &self,
+        owner: &str,
+        repository: &str,
+    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
+        self.get_releases_page(owner, repository, 1)
+    }
+
+    pub fn get_releases_next<T>(
+        &self,
+        previous: &ApiResponse<T>
+    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
+        let owner = &previous.owner.clone().unwrap();
+        let repository = &previous.repository.clone().unwrap();
+        let next_page = previous.next_page.unwrap();
+
+        self.get_releases_page(owner, repository, next_page)
+    }
+
+    // endregion
+
 }
 
 // region Helpers

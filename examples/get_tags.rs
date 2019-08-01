@@ -21,5 +21,4 @@ fn main() {
         page = gh.get_tags_next(&page).unwrap();
         println!("{:#?}", page);
     }
-
 }
