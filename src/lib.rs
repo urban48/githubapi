@@ -84,7 +84,7 @@ impl GitHubApi {
         self.get_tags_page(owner, repository, next_page)
     }
 
-    fn get_tags_page(
+    pub fn get_tags_page(
         &self,
         owner: &str,
         repository: &str,
@@ -125,7 +125,7 @@ impl GitHubApi {
         self.get_releases_page(owner, repository, next_page)
     }
 
-    fn get_releases_page(
+    pub fn get_releases_page(
         &self,
         owner: &str,
         repository: &str,

@@ -25,7 +25,7 @@ struct TagIterator<'a> {
     github_api: &'a GitHubApi,
     owner: String,
     repository: String,
-    page: Option<ApiResponse<Vec<TagsResponse>>>,
+    next_page: Option<u64>,
 }
 
 impl<'a> TagIterator<'a> {
@@ -34,7 +34,7 @@ impl<'a> TagIterator<'a> {
             github_api,
             owner: owner.to_string(),
             repository: repository.to_string(),
-            page: None,
+            next_page: Some(1),
         }
     }
 }
@@ -43,14 +43,16 @@ impl<'a> Iterator for TagIterator<'a> {
     type Item = ApiResponse<Vec<TagsResponse>>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.page.is_none() {
-            self.page = Some(self.github_api.get_tags(&self.owner, &self.repository).unwrap());
-            self.page.clone()
-        } else if self.page.clone()?.next_page.is_some() {
-            self.page = Some(self.github_api.get_tags_next(&self.page.clone()?).unwrap());
-            self.page.clone()
-        } else {
-            None
+        match self.next_page {
+            Some(page_number) => {
+                let page = self
+                    .github_api
+                    .get_tags_page(&self.owner, &self.repository, page_number)
+                    .unwrap();
+                self.next_page = page.next_page.clone();
+                Some(page)
+            }
+            None => None,
         }
     }
 }
