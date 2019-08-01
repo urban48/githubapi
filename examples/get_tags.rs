@@ -22,16 +22,16 @@ fn main() {
 // The code below shows how we can use the iterator pattern.
 
 struct TagIterator<'a> {
-    gh: &'a GitHubApi,
+    github_api: &'a GitHubApi,
     owner: String,
     repository: String,
     page: Option<ApiResponse<Vec<TagsResponse>>>,
 }
 
 impl<'a> TagIterator<'a> {
-    fn new(gh: &'a GitHubApi, owner: &str, repository: &str) -> Self {
+    fn new(github_api: &'a GitHubApi, owner: &str, repository: &str) -> Self {
         Self {
-            gh,
+            github_api,
             owner: owner.to_string(),
             repository: repository.to_string(),
             page: None,
@@ -44,10 +44,10 @@ impl<'a> Iterator for TagIterator<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.page.is_none() {
-            self.page = Some(self.gh.get_tags(&self.owner, &self.repository).unwrap());
+            self.page = Some(self.github_api.get_tags(&self.owner, &self.repository).unwrap());
             self.page.clone()
         } else if self.page.clone()?.next_page.is_some() {
-            self.page = Some(self.gh.get_tags_next(&self.page.clone()?).unwrap());
+            self.page = Some(self.github_api.get_tags_next(&self.page.clone()?).unwrap());
             self.page.clone()
         } else {
             None
