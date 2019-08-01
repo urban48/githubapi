@@ -11,6 +11,7 @@ pub struct GitHubApi {
 
 #[derive(Debug)]
 pub enum GitHubApiError {
+    NotImplemented,
     JsonError(JsonError),
     ReqwestError(ReqwestError),
 }
@@ -40,9 +41,8 @@ impl GitHubApi {
         }
     }
 
-    pub fn get_rate_limit(&self) -> Result<RateLimit, GitHubApiError> {
-        let method = format!("rate_limit");
-        let result = self.api_get_call(&method)?;
+    pub fn get_rate_limit(&self) -> Result<RateLimitResponse, GitHubApiError> {
+        let result = self.api_get_call("rate_limit")?;
 
         match serde_json::from_str(&result) {
             Ok(value) => Ok(value),
@@ -50,12 +50,12 @@ impl GitHubApi {
         }
     }
 
-    pub fn get_tags(&self) -> Result<(), GitHubApiError> {
-        Ok(())
+    pub fn get_tags(&self) -> Result<TagsResponse, GitHubApiError> {
+        Err(GitHubApiError::NotImplemented)
     }
 
-    pub fn get_repos(&self) -> Result<(), GitHubApiError> {
-        Ok(())
+    pub fn get_repos(&self) -> Result<ReposResponse, GitHubApiError> {
+        Err(GitHubApiError::NotImplemented)
     }
 
     /// Fetches all pull requests for a repository.
@@ -63,7 +63,7 @@ impl GitHubApi {
         &self,
         owner: &str,
         repository: &str,
-    ) -> Result<Vec<PullRequest>, GitHubApiError> {
+    ) -> Result<Vec<PullRequestResponse>, GitHubApiError> {
         let method = format!("repos/{}/{}/pulls", owner, repository);
         let result = self.api_get_call(&method)?;
 
@@ -86,10 +86,10 @@ pub enum OpenClosed {
 
 // endregion
 
-// region PullRequest
+// region PullRequestResponse
 
 #[derive(Debug, Deserialize)]
-pub struct PullRequest {
+pub struct PullRequestResponse {
     url: String,
     id: u32,
     title: String,
@@ -98,10 +98,10 @@ pub struct PullRequest {
 
 // endregion
 
-// region RateLimit
+// region RateLimitResponse
 
 #[derive(Debug, Deserialize)]
-pub struct RateLimit {
+pub struct RateLimitResponse {
     pub resources: RateLimitResources,
     pub rate: LimitRemainingReset,
 }
@@ -120,6 +120,20 @@ pub struct LimitRemainingReset {
     pub remaining: u32,
     pub reset: u64,
 }
+
+// endregion
+
+// region TagsResponse
+
+#[derive(Debug, Deserialize)]
+pub struct TagsResponse {}
+
+// endregion
+
+// region ReposResponse
+
+#[derive(Debug, Deserialize)]
+pub struct ReposResponse {}
 
 // endregion
 
