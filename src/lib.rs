@@ -9,13 +9,6 @@ pub struct GitHubApi {
     password: String,
 }
 
-#[derive(Debug)]
-pub enum GitHubApiError {
-    NotImplemented,
-    JsonError(JsonError),
-    ReqwestError(ReqwestError),
-}
-
 impl GitHubApi {
     pub fn new(username: &str, password: &str) -> Self {
         Self {
@@ -83,6 +76,17 @@ impl GitHubApi {
         GitHubApi::parse_json(&self.api_get_call(&method)?)
     }
 }
+
+// region Errors
+
+#[derive(Debug)]
+pub enum GitHubApiError {
+    NotImplemented,
+    JsonError(JsonError),
+    ReqwestError(ReqwestError),
+}
+
+// endregion
 
 // region Enums
 
