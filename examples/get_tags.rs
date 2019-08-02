@@ -1,4 +1,4 @@
-use githubapi::{GitHubApi, TagIterator};
+use githubapi::{GitHubApi, TagPaginator};
 
 use std::env;
 
@@ -18,7 +18,7 @@ fn main() {
     // This approach looks and feels nice, but it's a hell of a lot
     // more complicated to write. Go check the code for it. It's over 30 lines.
 
-    for page in TagIterator::new(&gh, "sous-chefs", "postgresql") {
+    for page in TagPaginator::new(&gh, "sous-chefs", "postgresql") {
         println!("{:#?}", page);
     }
 }
