@@ -14,6 +14,7 @@ pub struct GitHubApi {
     password: String,
 }
 
+/// Implement basic functionality.
 impl GitHubApi {
     pub fn new(username: &str, password: &str) -> Self {
         Self {
@@ -50,7 +51,10 @@ impl GitHubApi {
             Err(error) => Err(GitHubApiError::ReqwestError(error)),
         }
     }
+}
 
+/// Implement rate limits.
+impl GitHubApi {
     pub fn get_rate_limit(&self) -> Result<ApiResponse<RateLimitResponse>, GitHubApiError> {
         let (text, limit_remaining_reset, _) = self.api_get_call("rate_limit", 1)?;
 
@@ -62,9 +66,11 @@ impl GitHubApi {
             next_page: None,
         })
     }
+}
 
-    // region Tags
-
+// region Tags
+/// Implement tags.
+impl GitHubApi {
     pub fn get_tags(
         &self,
         owner: &str,
@@ -101,11 +107,12 @@ impl GitHubApi {
             next_page,
         })
     }
+}
+// endregion
 
-    // endregion
-
-    // region Releases
-
+// region Releases
+/// Implement releases.
+impl GitHubApi {
     pub fn get_releases(
         &self,
         owner: &str,
@@ -142,9 +149,8 @@ impl GitHubApi {
             next_page,
         })
     }
-
-    // endregion
 }
+// endregion
 
 // region Helpers
 
@@ -232,8 +238,8 @@ impl HeaderMapExtensions for HeaderMap<HeaderValue> {
 }
 
 fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
-where
-    T: Deserialize<'a>,
+    where
+        T: Deserialize<'a>,
 {
     match serde_json::from_str(&text) {
         Ok(value) => Ok(value),
@@ -444,4 +450,3 @@ mod tests {
 }
 
 // endregion
-
