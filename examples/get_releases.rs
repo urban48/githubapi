@@ -1,4 +1,4 @@
-use githubapi::GitHubApi;
+use githubapi::{GitHubApi, ReleasePaginator};
 use std::env;
 
 /// To run this example, you must first set two environment variables.
@@ -17,11 +17,7 @@ fn main() {
     // This is the "primitive" pagination approach. It's actually very simple.
     // The alternative is to use an iterator, which you'll find in `get_tags.rs`.
 
-    let mut page = gh.get_releases("sous-chefs", "postgresql").unwrap();
-    println!("{:#?}", page);
-
-    while page.next_page.is_some() {
-        page = gh.get_releases_next(&page).unwrap();
+    for page in ReleasePaginator::new(&gh, "sous-chefs", "postgresql") {
         println!("{:#?}", page);
     }
 }

@@ -9,6 +9,9 @@ use serde_json::error::Error as JsonError;
 
 use regex::Regex;
 
+mod macros;
+
+
 pub struct GitHubApi {
     username: String,
     password: String,
@@ -68,89 +71,11 @@ impl GitHubApi {
     }
 }
 
-// region Tags
-/// Implement tags.
-impl GitHubApi {
-    pub fn get_tags(
-        &self,
-        owner: &str,
-        repository: &str,
-    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
-        self.get_tags_page(owner, repository, 1)
-    }
+// Implement the tags endpoint, including an pagination iterator.
+make_paginated_api!(get_tags_page, "tags", TagPaginator, TagsResponse);
 
-    pub fn get_tags_next<T>(
-        &self,
-        previous: &ApiResponse<T>,
-    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
-        let owner = &previous.owner.clone().unwrap();
-        let repository = &previous.repository.clone().unwrap();
-        let next_page = previous.next_page.unwrap();
-
-        self.get_tags_page(owner, repository, next_page)
-    }
-
-    pub fn get_tags_page(
-        &self,
-        owner: &str,
-        repository: &str,
-        page: u64,
-    ) -> Result<ApiResponse<Vec<TagsResponse>>, GitHubApiError> {
-        let method = format!("repos/{}/{}/tags", owner, repository);
-        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
-
-        Ok(ApiResponse {
-            result: parse_json(&text)?,
-            limits: limit_remaining_reset,
-            owner: Some(owner.to_string()),
-            repository: Some(repository.to_string()),
-            next_page,
-        })
-    }
-}
-// endregion
-
-// region Releases
-/// Implement releases.
-impl GitHubApi {
-    pub fn get_releases(
-        &self,
-        owner: &str,
-        repository: &str,
-    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
-        self.get_releases_page(owner, repository, 1)
-    }
-
-    pub fn get_releases_next<T>(
-        &self,
-        previous: &ApiResponse<T>,
-    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
-        let owner = &previous.owner.clone().unwrap();
-        let repository = &previous.repository.clone().unwrap();
-        let next_page = previous.next_page.unwrap();
-
-        self.get_releases_page(owner, repository, next_page)
-    }
-
-    pub fn get_releases_page(
-        &self,
-        owner: &str,
-        repository: &str,
-        page: u64,
-    ) -> Result<ApiResponse<Vec<ReleasesResponse>>, GitHubApiError> {
-        let method = format!("repos/{}/{}/releases", owner, repository);
-        let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
-
-        Ok(ApiResponse {
-            result: parse_json(&text)?,
-            limits: limit_remaining_reset,
-            owner: Some(owner.to_string()),
-            repository: Some(repository.to_string()),
-            next_page,
-        })
-    }
-}
-// endregion
+// Implement the releases endpoint, including an pagination iterator.
+make_paginated_api!(get_releases_page, "releases", ReleasePaginator, ReleasesResponse);
 
 // region Helpers
 
@@ -238,8 +163,8 @@ impl HeaderMapExtensions for HeaderMap<HeaderValue> {
 }
 
 fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
-    where
-        T: Deserialize<'a>,
+where
+    T: Deserialize<'a>,
 {
     match serde_json::from_str(&text) {
         Ok(value) => Ok(value),
@@ -399,46 +324,6 @@ pub struct GenericPerson {
 
 // endregion
 
-// region TagIterator
-
-pub struct TagIterator<'a> {
-    github_api: &'a GitHubApi,
-    owner: String,
-    repository: String,
-    next_page: Option<u64>,
-}
-
-impl<'a> TagIterator<'a> {
-    pub fn new(github_api: &'a GitHubApi, owner: &str, repository: &str) -> Self {
-        Self {
-            github_api,
-            owner: owner.to_string(),
-            repository: repository.to_string(),
-            next_page: Some(1),
-        }
-    }
-}
-
-impl<'a> Iterator for TagIterator<'a> {
-    type Item = ApiResponse<Vec<TagsResponse>>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next_page {
-            Some(page_number) => {
-                let page = self
-                    .github_api
-                    .get_tags_page(&self.owner, &self.repository, page_number)
-                    .unwrap();
-                self.next_page = page.next_page.clone();
-                Some(page)
-            }
-            None => None,
-        }
-    }
-}
-
-// endregion
-
 // region Tests
 
 #[cfg(test)]
@@ -450,3 +335,4 @@ mod tests {
 }
 
 // endregion
+
