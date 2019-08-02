@@ -27,7 +27,7 @@ impl GitHubApi {
         method: &str,
         page: u64,
     ) -> Result<(String, Option<LimitRemainingReset>, Option<u64>), GitHubApiError> {
-        let url = format!("https://api.github.com/{}?page={}", method, page);
+        let url = format!("https://api.github.com/{}?per_page=100&page={}", method, page);
 
         let result = Client::new()
             .get(&url)
@@ -189,7 +189,7 @@ impl HeaderMapExtensions for HeaderMap<HeaderValue> {
 
     fn get_pagination(&self) -> Option<Vec<Pagination>> {
         lazy_static! {
-            static ref RE: Regex = Regex::new(r#"<.*?\?page=(\d+)>; rel="(.*?)""#).unwrap();
+            static ref RE: Regex = Regex::new(r#"<.*?[\?&]page=(\d+).*?>; rel="(.*?)""#).unwrap();
         }
 
         match self.get("Link") {
