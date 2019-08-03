@@ -171,7 +171,7 @@ pub struct LicenseResponse {
     pub encoding: String,
     #[serde(rename(deserialize = "_links"))]
     pub links: LicenseLinks,
-    pub license: LicenseLicense
+    pub license: LicenseLicense,
 }
 
 #[derive(Debug, Deserialize)]
