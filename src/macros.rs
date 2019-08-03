@@ -36,6 +36,11 @@ macro_rules! make_single_page_api {
 }
 
 // make_paginated_api!(
+//     // You make this name up. A good idea is to call it get_SOMETHINGS,
+//     // where SOMETHINGS is the name of what you're querying, pluralized.
+//     // It'll be added to GitHubApi as a function.
+//     get_tags,
+//
 //     // You make this name up. A good idea is to call it get_SOMETHING_page,
 //     // where SOMETHING is the name of what you're querying.
 //     // It'll be added to GitHubApi as a function.
