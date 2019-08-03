@@ -4,7 +4,7 @@ use serde_json::error::Error as JsonError;
 
 // region Envelopes
 
-pub(crate) type Response<T> = Result<GitHubApiResult<T>, GitHubApiError>;
+pub type Response<T> = Result<GitHubApiResult<T>, GitHubApiError>;
 
 #[derive(Debug)]
 pub struct GitHubApiResult<T> {
@@ -50,7 +50,10 @@ pub enum Pagination {
 #[derive(Debug, Deserialize)]
 pub struct RateLimitResponse {
     pub resources: RateLimitResources,
-    pub rate: LimitRemainingReset,
+
+    // NOTE: The rate is deprecated by GitHub, and may disappear at any time.
+    //       Use `resources.core` instead.
+    pub rate: Option<LimitRemainingReset>,
 }
 
 #[derive(Debug, Deserialize)]
