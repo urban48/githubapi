@@ -1,3 +1,19 @@
+// make_single_page_api!(
+//     // You make this name up. A good idea is to call it get_SOMETHING,
+//     // where SOMETHING is the name of what you're querying.
+//     // It'll be added to GitHubApi as a function.
+//     get_license,
+//
+//     // This is the last word in the url you're querying.
+//     // In this case it's the last category of "/repos/:owner/:repo/license".
+//     "license",
+//
+//     // This is the name of the type your Paginator produces.
+//     // If you're getting users, then the correct thing to name this would be UsersResponse.
+//     // Responses are currently located in types.rs.
+//     LicenseResponse
+// );
+
 #[macro_export]
 macro_rules! make_single_page_api {
     ($function_name:ident, $endpoint:expr, $return_type:ty) => {
@@ -17,6 +33,26 @@ macro_rules! make_single_page_api {
         }
     };
 }
+
+// make_paginated_api!(
+//     // You make this name up. A good idea is to call it get_SOMETHING_page,
+//     // where SOMETHING is the name of what you're querying.
+//     // It'll be added to GitHubApi as a function.
+//     get_tags_page,
+//
+//     // This is the last word in the url you're querying.
+//     // In this case it's the last category of "/repos/:owner/:repo/git/tags".
+//     "tags",
+//
+//     // You make this name up too. It's the name of the paginator iterator
+//     // that this macro creates.
+//     TagPaginator,
+//
+//     // This is the name of the type your Paginator produces.
+//     // If you're getting users, then the correct thing to name this would be UsersResponse.
+//     // Responses are currently located in types.rs.
+//     TagsResponse
+// );
 
 #[macro_export]
 macro_rules! make_paginated_api {
