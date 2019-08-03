@@ -4,10 +4,10 @@ use serde_json::error::Error as JsonError;
 
 // region Envelopes
 
-pub(crate) type Response<T> = Result<ApiResponse<T>, GitHubApiError>;
+pub(crate) type Response<T> = Result<GitHubApiResult<T>, GitHubApiError>;
 
 #[derive(Debug)]
-pub struct ApiResponse<T> {
+pub struct GitHubApiResult<T> {
     pub result: T,
     pub limits: Option<LimitRemainingReset>,
     pub owner: Option<String>,
