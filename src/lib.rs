@@ -69,6 +69,9 @@ impl GitHubApi {
     }
 }
 
+// Implement the license endpoint. No pagination.
+make_single_page_api!(get_license, "license", LicenseResponse);
+
 // Implement the tags endpoint, including an pagination iterator.
 make_paginated_api!(get_tags_page, "tags", TagPaginator, TagsResponse);
 

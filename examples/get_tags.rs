@@ -1,5 +1,4 @@
 use githubapi::{GitHubApi, TagPaginator};
-
 use std::env;
 
 /// To run this example, you must first set two environment variables.
@@ -14,9 +13,6 @@ fn main() {
     let password = env::var("GH_PASS").expect("GH_PASS not defined.");
 
     let gh = GitHubApi::new(&username, &password);
-
-    // This approach looks and feels nice, but it's a hell of a lot
-    // more complicated to write. Go check the code for it. It's over 30 lines.
 
     for page in TagPaginator::new(&gh, "sous-chefs", "postgresql") {
         println!("{:#?}", page);

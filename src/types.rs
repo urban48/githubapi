@@ -153,3 +153,42 @@ pub struct GenericPerson {
 }
 
 // endregion
+
+// region LicenseResponse
+
+#[derive(Debug, Deserialize)]
+pub struct LicenseResponse {
+    pub name: String,
+    pub path: String,
+    pub sha: String,
+    pub size: u64,
+    pub url: String,
+    pub html_url: String,
+    pub git_url: String,
+    pub download_url: String,
+    pub r#type: String,
+    pub content: String,
+    pub encoding: String,
+    #[serde(rename(deserialize = "_links"))]
+    pub links: LicenseLinks,
+    pub license: LicenseLicense
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LicenseLinks {
+    #[serde(rename(deserialize = "self"))]
+    pub self_link: String,
+    pub git: String,
+    pub html: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LicenseLicense {
+    pub key: String,
+    pub name: String,
+    pub spdx_id: String,
+    pub url: String,
+    pub node_id: String,
+}
+
+// endregion

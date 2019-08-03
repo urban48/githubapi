@@ -1,4 +1,24 @@
 #[macro_export]
+macro_rules! make_single_page_api {
+    ($function_name:ident, $endpoint:expr, $return_type:ty) => {
+        impl GitHubApi {
+            pub fn $function_name(&self, owner: &str, repository: &str) -> Response<$return_type> {
+                let method = format!("repos/{}/{}/{}", owner, repository, $endpoint);
+                let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, 1)?;
+
+                Ok(ApiResponse {
+                    result: parse_json(&text)?,
+                    limits: limit_remaining_reset,
+                    owner: Some(owner.to_string()),
+                    repository: Some(repository.to_string()),
+                    next_page,
+                })
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! make_paginated_api {
     ($function_name:ident, $endpoint:expr, $iterator_name:ident, $return_type:ty) => {
         impl GitHubApi {
