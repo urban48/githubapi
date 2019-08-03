@@ -6,7 +6,7 @@ use std::env;
 /// export GH_USER="SandyClaws"
 /// export GH_PASS="ThisIsHalloween"
 ///
-/// cargo run --example get_pull_requests
+/// cargo run --example get_tags
 /// ```
 fn main() {
     let username = env::var("GH_USER").expect("GH_USER not defined.");
