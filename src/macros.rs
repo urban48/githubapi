@@ -18,6 +18,7 @@
 macro_rules! make_single_page_api {
     ($function_name:ident, $endpoint:expr, $return_type:ty) => {
         impl GitHubApi {
+            /// Gets the page.
             pub fn $function_name(&self, owner: &str, repository: &str) -> Response<$return_type> {
                 let method = format!("repos/{}/{}/{}", owner, repository, $endpoint);
                 let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, 1)?;
@@ -58,6 +59,7 @@ macro_rules! make_single_page_api {
 macro_rules! make_paginated_api {
     ($paginator_function_name:ident, $page_function_name:ident, $endpoint:expr, $paginator_name:ident, $return_type:ty) => {
         impl GitHubApi {
+            /// Gets a single page.
             pub fn $page_function_name(
                 &self,
                 owner: &str,
@@ -76,6 +78,7 @@ macro_rules! make_paginated_api {
                 })
             }
 
+            /// Creates a paginator.
             pub fn $paginator_function_name(
                 &self,
                 owner: &str,
@@ -106,16 +109,24 @@ macro_rules! make_paginated_api {
         impl<'a> Iterator for $paginator_name<'a> {
             type Item = ApiResponse<Vec<$return_type>>;
 
+            /// Gets the next page.
             fn next(&mut self) -> Option<Self::Item> {
                 match self.next_page {
                     Some(page_number) => {
-                        let page = self
+                        let requested_page = self
                             .github_api
-                            .$page_function_name(&self.owner, &self.repository, page_number)
-                            .unwrap();
+                            .$page_function_name(&self.owner, &self.repository, page_number);
 
-                        self.next_page = page.next_page.clone();
-                        Some(page)
+                        match requested_page {
+                            Ok(page) => {
+                                self.next_page = page.next_page.clone();
+                                Some(page)
+                            },
+                            Err(error) => {
+                                eprintln!("Error: {:#?}", error);
+                                None
+                            }
+                        }
                     }
                     None => None,
                 }

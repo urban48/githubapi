@@ -56,6 +56,7 @@ impl GitHubApi {
 
 /// Implement rate limits.
 impl GitHubApi {
+    /// Gets rate limit information.
     pub fn get_rate_limit(&self) -> Response<RateLimitResponse> {
         let (text, limit_remaining_reset, _) = self.api_get_call("rate_limit", 1)?;
 
