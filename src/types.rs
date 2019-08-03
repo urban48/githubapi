@@ -119,7 +119,7 @@ pub struct ReleasesAsset {
     pub id: u64,
     pub node_id: String,
     pub name: String,
-    pub label: String,
+    pub label: Option<String>,
     pub uploader: GenericPerson,
     pub content_type: String,
     pub state: String,
