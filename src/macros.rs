@@ -56,9 +56,9 @@ macro_rules! make_single_page_api {
 
 #[macro_export]
 macro_rules! make_paginated_api {
-    ($function_name:ident, $endpoint:expr, $iterator_name:ident, $return_type:ty) => {
+    ($paginator_function_name:ident, $page_function_name:ident, $endpoint:expr, $paginator_name:ident, $return_type:ty) => {
         impl GitHubApi {
-            pub fn $function_name(
+            pub fn $page_function_name(
                 &self,
                 owner: &str,
                 repository: &str,
@@ -75,16 +75,24 @@ macro_rules! make_paginated_api {
                     next_page,
                 })
             }
+
+            pub fn $paginator_function_name(
+                &self,
+                owner: &str,
+                repository: &str,
+            ) -> $paginator_name {
+                $paginator_name::new(&self, owner, repository)
+            }
         }
 
-        pub struct $iterator_name<'a> {
+        pub struct $paginator_name<'a> {
             github_api: &'a GitHubApi,
             owner: String,
             repository: String,
             next_page: Option<u64>,
         }
 
-        impl<'a> $iterator_name<'a> {
+        impl<'a> $paginator_name<'a> {
             pub fn new(github_api: &'a GitHubApi, owner: &str, repository: &str) -> Self {
                 Self {
                     github_api,
@@ -95,7 +103,7 @@ macro_rules! make_paginated_api {
             }
         }
 
-        impl<'a> Iterator for $iterator_name<'a> {
+        impl<'a> Iterator for $paginator_name<'a> {
             type Item = ApiResponse<Vec<$return_type>>;
 
             fn next(&mut self) -> Option<Self::Item> {
@@ -103,7 +111,7 @@ macro_rules! make_paginated_api {
                     Some(page_number) => {
                         let page = self
                             .github_api
-                            .$function_name(&self.owner, &self.repository, page_number)
+                            .$page_function_name(&self.owner, &self.repository, page_number)
                             .unwrap();
 
                         self.next_page = page.next_page.clone();
