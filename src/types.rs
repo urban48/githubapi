@@ -6,7 +6,7 @@ use serde_json::error::Error as JsonError;
 
 pub(crate) type Response<T> = Result<ApiResponse<T>, GitHubApiError>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct ApiResponse<T> {
     pub result: T,
     pub limits: Option<LimitRemainingReset>,
@@ -61,7 +61,7 @@ pub struct RateLimitResources {
     pub integration_manifest: LimitRemainingReset,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize)]
 pub struct LimitRemainingReset {
     pub limit: u64,
     pub remaining: u64,
@@ -72,7 +72,7 @@ pub struct LimitRemainingReset {
 
 // region TagsResponse
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize)]
 pub struct TagsResponse {
     pub name: String,
     pub zipball_url: String,
@@ -81,7 +81,7 @@ pub struct TagsResponse {
     pub node_id: String,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize)]
 pub struct TagsCommit {
     pub sha: String,
     pub url: String,
