@@ -7,7 +7,7 @@ macro_rules! make_paginated_api {
                 owner: &str,
                 repository: &str,
                 page: u64,
-            ) -> Result<ApiResponse<Vec<$return_type>>, GitHubApiError> {
+            ) -> Response<Vec<$return_type>> {
                 let method = format!("repos/{}/{}/{}", owner, repository, $endpoint);
                 let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
 
