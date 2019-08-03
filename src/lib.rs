@@ -73,10 +73,11 @@ impl GitHubApi {
 make_single_page_api!(get_license, "license", LicenseResponse);
 
 // Implement the tags endpoint, including an pagination iterator.
-make_paginated_api!(get_tags_page, "tags", TagPaginator, TagsResponse);
+make_paginated_api!(get_tags, get_tags_page, "tags", TagPaginator, TagsResponse);
 
 // Implement the releases endpoint, including an pagination iterator.
 make_paginated_api!(
+    get_releases,
     get_releases_page,
     "releases",
     ReleasePaginator,

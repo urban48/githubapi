@@ -1,4 +1,4 @@
-use githubapi::{GitHubApi, ReleasePaginator};
+use githubapi::GitHubApi;
 use std::env;
 
 /// To run this example, you must first set two environment variables.
@@ -14,7 +14,7 @@ fn main() {
 
     let gh = GitHubApi::new(&username, &password);
 
-    for page in ReleasePaginator::new(&gh, "sous-chefs", "postgresql") {
+    for page in gh.get_releases("sous-chefs", "postgresql") {
         println!("{:#?}", page);
     }
 }

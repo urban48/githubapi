@@ -13,7 +13,7 @@ fn main() {
     let password = env::var("GH_PASS").expect("GH_PASS not defined.");
 
     let gh = GitHubApi::new(&username, &password);
-    let license = gh.get_license("sous-chefs", "postgresql");
 
+    let license = gh.get_license("sous-chefs", "postgresql");
     println!("{:#?}", license);
 }

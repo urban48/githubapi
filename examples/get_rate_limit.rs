@@ -13,7 +13,7 @@ fn main() {
     let password = env::var("GH_PASS").expect("GH_PASS not defined.");
 
     let gh = GitHubApi::new(&username, &password);
-    let result = gh.get_rate_limit();
 
+    let result = gh.get_rate_limit();
     println!("{:#?}", result);
 }
