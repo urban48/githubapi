@@ -8,10 +8,10 @@ use serde::Deserialize;
 
 pub trait HeaderMapExtensions {
     fn get_as_u64(&self, key: &str) -> Option<u64>;
-
     fn get_rate_limits(&self) -> Option<LimitRemainingReset>;
     fn get_pagination(&self) -> Option<Vec<Pagination>>;
     fn get_next_page(&self) -> Option<u64>;
+    fn is_ok(&self) -> bool;
 }
 
 impl HeaderMapExtensions for HeaderMap<HeaderValue> {
@@ -82,6 +82,19 @@ impl HeaderMapExtensions for HeaderMap<HeaderValue> {
             None
         }
     }
+
+    fn is_ok(&self) -> bool {
+        match self.get("status") {
+            Some(value) => match value.to_str() {
+                Ok(value) => match value.split_whitespace().next() {
+                    Some(value) => value == "200",
+                    _ => false,
+                },
+                _ => false,
+            },
+            _ => false,
+        }
+    }
 }
 
 pub fn parse_json<'a, T>(text: &'a str) -> Result<T, GitHubApiError>
@@ -90,7 +103,7 @@ where
 {
     match serde_json::from_str(&text) {
         Ok(value) => Ok(value),
-        Err(error) => Err(GitHubApiError::JsonError(error)),
+        Err(error) => Err(GitHubApiError::JsonError((error, text.to_string()))),
     }
 }
 

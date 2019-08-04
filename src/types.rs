@@ -19,7 +19,8 @@ pub struct GitHubApiResult<T> {
 #[derive(Debug)]
 pub enum GitHubApiError {
     NotImplemented,
-    JsonError(JsonError),
+    JsonError((JsonError, String)),
+    GitHubError((String, String)),
     ReqwestError(ReqwestError),
 }
 
