@@ -14,7 +14,7 @@ fn main() {
 
     let gh = GitHubApi::new(&username, &password);
 
-    for page in gh.get_tags("sous-chefs", "postgresql") {
+    for page in gh.get_tags("github", "github") {
         println!("{:#?}", page);
     }
 }
