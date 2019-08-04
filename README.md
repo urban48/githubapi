@@ -35,3 +35,30 @@ for page in gh.get_tags("segfaultsourcery", "githubapi") {
     println!("{:#?}", page);
 }
 ```
+
+# Envelope
+
+## Result type
+Every endpoint returns `Result<GitHubApiResult<T>, GitHubApiError>`.
+
+### GitHubApiResult
+```rust
+pub struct GitHubApiResult<T> {
+    pub result: T,
+    pub raw_result: String,
+    pub limits: Option<LimitRemainingReset>,
+    pub owner: Option<String>,
+    pub repository: Option<String>,
+    pub next_page: Option<u64>,
+}
+```
+
+### GitHubApiError
+```rust
+pub enum GitHubApiError {
+    NotImplemented,
+    JsonError((JsonError, String)),
+    GitHubError((String, String)),
+    ReqwestError(ReqwestError),
+}
+```
