@@ -1,4 +1,3 @@
-// region Helpers
 use crate::types::{GitHubApiError, LimitRemainingReset};
 use crate::Pagination;
 use lazy_static::lazy_static;
@@ -106,5 +105,3 @@ where
         Err(error) => Err(GitHubApiError::JsonError((error, text.to_string()))),
     }
 }
-
-// endregion
