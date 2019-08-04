@@ -62,6 +62,7 @@ impl GitHubApi {
 
         Ok(GitHubApiResult {
             result: parse_json(&text)?,
+            raw_result: text,
             limits: limit_remaining_reset,
             owner: None,
             repository: None,

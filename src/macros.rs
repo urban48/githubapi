@@ -25,6 +25,7 @@ macro_rules! make_single_page_api {
 
                 Ok(GitHubApiResult {
                     result: parse_json(&text)?,
+                    raw_result: text,
                     limits: limit_remaining_reset,
                     owner: Some(owner.to_string()),
                     repository: Some(repository.to_string()),
@@ -76,6 +77,7 @@ macro_rules! make_paginated_api {
 
                 Ok(GitHubApiResult {
                     result: parse_json(&text)?,
+                    raw_result: text,
                     limits: limit_remaining_reset,
                     owner: Some(owner.to_string()),
                     repository: Some(repository.to_string()),

@@ -9,6 +9,7 @@ pub type Response<T> = Result<GitHubApiResult<T>, GitHubApiError>;
 #[derive(Debug)]
 pub struct GitHubApiResult<T> {
     pub result: T,
+    pub raw_result: String,
     pub limits: Option<LimitRemainingReset>,
     pub owner: Option<String>,
     pub repository: Option<String>,
