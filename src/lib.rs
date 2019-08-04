@@ -40,13 +40,20 @@ impl GitHubApi {
         match result {
             Ok(mut response) => {
                 let headers = response.headers();
-                let limit_remaining_reset = headers.get_rate_limits();
 
-                let next_page = headers.get_next_page();
+                if headers.is_ok() {
+                    let limit_remaining_reset = headers.get_rate_limits();
+                    let next_page = headers.get_next_page();
 
-                match response.text() {
-                    Ok(text) => Ok((text, limit_remaining_reset, next_page)),
-                    Err(error) => Err(GitHubApiError::ReqwestError(error)),
+                    match response.text() {
+                        Ok(text) => Ok((text, limit_remaining_reset, next_page)),
+                        Err(error) => Err(GitHubApiError::ReqwestError(error)),
+                    }
+                } else {
+                    Err(GitHubApiError::GitHubError((
+                        headers.get("status").unwrap().to_str().unwrap().to_string(),
+                        response.text().unwrap(),
+                    )))
                 }
             }
             Err(error) => Err(GitHubApiError::ReqwestError(error)),
