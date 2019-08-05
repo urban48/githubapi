@@ -21,7 +21,7 @@ fn main() {
 
     match releases_paginator.has_items() {
         Ok(true) => {
-            println!("There were releases. Get them.");
+            println!("There are releases. Get them.");
 
             // for page in releases_paginator {
             //     println!("{:#?}", page);
@@ -29,7 +29,7 @@ fn main() {
         }
 
         Ok(false) => {
-            println!("There were no releases. Get the tags instead.");
+            println!("There are no releases. Get the tags instead.");
 
             // for page in gh.get_tags(owner, repository) {
             //     println!("{:#?}", page);
