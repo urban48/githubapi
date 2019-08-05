@@ -25,10 +25,11 @@ impl GitHubApi {
         &self,
         method: &str,
         page: u64,
+        per_page: u64,
     ) -> Result<(String, Option<LimitRemainingReset>, Option<u64>), GitHubApiError> {
         let url = format!(
-            "https://api.github.com/{}?per_page=100&page={}",
-            method, page
+            "https://api.github.com/{}?per_page={}&page={}",
+            method, per_page, page
         );
 
         let result = Client::new()
@@ -65,7 +66,7 @@ impl GitHubApi {
 impl GitHubApi {
     /// Gets rate limit information.
     pub fn get_rate_limit(&self) -> Response<RateLimitResponse> {
-        let (text, limit_remaining_reset, _) = self.api_get_call("rate_limit", 1)?;
+        let (text, limit_remaining_reset, _) = self.api_get_call("rate_limit", 1, 100)?;
 
         Ok(GitHubApiResult {
             result: parse_json(&text)?,

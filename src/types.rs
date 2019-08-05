@@ -1,9 +1,9 @@
+use crate::helpers::ToJsonString;
 use reqwest::Error as ReqwestError;
 use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
 use serde_json::Value;
 use std::collections::HashMap;
-use crate::helpers::ToJsonString;
 
 #[macro_export]
 macro_rules! impl_to_json_string {
@@ -246,5 +246,3 @@ pub struct LicenseLicense {
 impl_to_json_string!(LicenseLicense);
 
 // endregion
-
-
