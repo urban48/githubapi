@@ -1,8 +1,8 @@
 use reqwest::Error as ReqwestError;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
-use std::collections::HashMap;
 use serde_json::Value;
+use std::collections::HashMap;
 
 // region Envelopes
 
@@ -30,7 +30,7 @@ pub enum GitHubApiError {
 
 // region Enums
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum OpenClosed {
     #[serde(rename(deserialize = "open"))]
     Open,
@@ -51,7 +51,7 @@ pub enum Pagination {
 
 // region RateLimitResponse
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RateLimitResponse {
     pub resources: RateLimitResources,
 
@@ -60,7 +60,7 @@ pub struct RateLimitResponse {
     pub rate: Option<LimitRemainingReset>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RateLimitResources {
     pub core: LimitRemainingReset,
     pub search: LimitRemainingReset,
@@ -68,7 +68,7 @@ pub struct RateLimitResources {
     pub integration_manifest: LimitRemainingReset,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LimitRemainingReset {
     pub limit: u64,
     pub remaining: u64,
@@ -79,7 +79,7 @@ pub struct LimitRemainingReset {
 
 // region TagsResponse
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TagsResponse {
     pub name: String,
     pub zipball_url: String,
@@ -91,7 +91,7 @@ pub struct TagsResponse {
     pub uncaptured: HashMap<String, Value>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct TagsCommit {
     pub sha: String,
     pub url: String,
@@ -104,7 +104,7 @@ pub struct TagsCommit {
 
 // region ReleasesResponse
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ReleasesResponse {
     pub url: String,
     pub assets_url: String,
@@ -129,7 +129,7 @@ pub struct ReleasesResponse {
     pub uncaptured: HashMap<String, Value>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ReleasesAsset {
     pub url: String,
     pub id: u64,
@@ -149,7 +149,7 @@ pub struct ReleasesAsset {
     pub uncaptured: HashMap<String, Value>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GenericPerson {
     pub login: String,
     pub id: u64,
@@ -178,7 +178,7 @@ pub struct GenericPerson {
 
 // region LicenseResponse
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LicenseResponse {
     pub name: String,
     pub path: String,
@@ -199,7 +199,7 @@ pub struct LicenseResponse {
     pub uncaptured: HashMap<String, Value>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LicenseLinks {
     #[serde(rename(deserialize = "self"))]
     pub self_link: String,
@@ -210,7 +210,7 @@ pub struct LicenseLinks {
     pub uncaptured: HashMap<String, Value>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct LicenseLicense {
     pub key: String,
     pub name: String,
