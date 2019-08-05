@@ -3,6 +3,8 @@ use reqwest::Client;
 use crate::helpers::{parse_json, HeaderMapExtensions};
 use crate::types::*;
 
+pub use helpers::ToJsonString;
+
 mod helpers;
 mod macros;
 mod types;
