@@ -3,6 +3,18 @@ use serde::{Deserialize, Serialize};
 use serde_json::error::Error as JsonError;
 use serde_json::Value;
 use std::collections::HashMap;
+use crate::helpers::ToJsonString;
+
+#[macro_export]
+macro_rules! impl_to_json_string {
+    ($type_name:ty) => {
+        impl ToJsonString for $type_name {
+            fn to_json_string(&self) -> Result<String, JsonError> {
+                serde_json::to_string(self)
+            }
+        }
+    };
+}
 
 // region Envelopes
 
@@ -59,6 +71,7 @@ pub struct RateLimitResponse {
     //       Use `resources.core` instead.
     pub rate: Option<LimitRemainingReset>,
 }
+impl_to_json_string!(RateLimitResponse);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RateLimitResources {
@@ -67,6 +80,7 @@ pub struct RateLimitResources {
     pub graphql: LimitRemainingReset,
     pub integration_manifest: LimitRemainingReset,
 }
+impl_to_json_string!(RateLimitResources);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LimitRemainingReset {
@@ -74,6 +88,7 @@ pub struct LimitRemainingReset {
     pub remaining: u64,
     pub reset: u64,
 }
+impl_to_json_string!(LimitRemainingReset);
 
 // endregion
 
@@ -90,6 +105,7 @@ pub struct TagsResponse {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(TagsResponse);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TagsCommit {
@@ -99,6 +115,7 @@ pub struct TagsCommit {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(TagsCommit);
 
 // endregion
 
@@ -128,6 +145,7 @@ pub struct ReleasesResponse {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(ReleasesResponse);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ReleasesAsset {
@@ -148,6 +166,7 @@ pub struct ReleasesAsset {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(ReleasesAsset);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GenericPerson {
@@ -173,6 +192,7 @@ pub struct GenericPerson {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(GenericPerson);
 
 // endregion
 
@@ -198,6 +218,7 @@ pub struct LicenseResponse {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(LicenseResponse);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LicenseLinks {
@@ -209,6 +230,7 @@ pub struct LicenseLinks {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(LicenseLinks);
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LicenseLicense {
@@ -221,5 +243,8 @@ pub struct LicenseLicense {
     #[serde(flatten)]
     pub uncaptured: HashMap<String, Value>,
 }
+impl_to_json_string!(LicenseLicense);
 
 // endregion
+
+

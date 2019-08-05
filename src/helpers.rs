@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use reqwest::header::{HeaderMap, HeaderValue};
 use serde::Deserialize;
+use serde_json::error::Error as JsonError;
 
 pub trait HeaderMapExtensions {
     fn get_as_u64(&self, key: &str) -> Option<u64>;
@@ -105,3 +106,8 @@ where
         Err(error) => Err(GitHubApiError::JsonError((error, text.to_string()))),
     }
 }
+
+pub trait ToJsonString {
+    fn to_json_string(&self) -> Result<String, JsonError>;
+}
+
