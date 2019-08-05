@@ -110,4 +110,3 @@ where
 pub trait ToJsonString {
     fn to_json_string(&self) -> Result<String, JsonError>;
 }
-
