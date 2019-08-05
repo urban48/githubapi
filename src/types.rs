@@ -1,6 +1,8 @@
 use reqwest::Error as ReqwestError;
 use serde::Deserialize;
 use serde_json::error::Error as JsonError;
+use std::collections::HashMap;
+use serde_json::Value;
 
 // region Envelopes
 
@@ -84,12 +86,18 @@ pub struct TagsResponse {
     pub tarball_url: String,
     pub commit: TagsCommit,
     pub node_id: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct TagsCommit {
     pub sha: String,
     pub url: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 // endregion
@@ -116,6 +124,9 @@ pub struct ReleasesResponse {
     pub tarball_url: String,
     pub zipball_url: String,
     pub body: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -133,6 +144,9 @@ pub struct ReleasesAsset {
     pub created_at: String,
     pub updated_at: String,
     pub browser_download_url: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -155,6 +169,9 @@ pub struct GenericPerson {
     pub received_events_url: String,
     pub r#type: String,
     pub site_admin: bool,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 // endregion
@@ -177,6 +194,9 @@ pub struct LicenseResponse {
     #[serde(rename(deserialize = "_links"))]
     pub links: LicenseLinks,
     pub license: LicenseLicense,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -185,6 +205,9 @@ pub struct LicenseLinks {
     pub self_link: String,
     pub git: String,
     pub html: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -194,6 +217,9 @@ pub struct LicenseLicense {
     pub spdx_id: String,
     pub url: String,
     pub node_id: String,
+
+    #[serde(flatten)]
+    pub uncaptured: HashMap<String, Value>,
 }
 
 // endregion
