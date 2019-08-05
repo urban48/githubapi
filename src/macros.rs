@@ -21,7 +21,8 @@ macro_rules! make_single_page_api {
             /// Gets the page.
             pub fn $function_name(&self, owner: &str, repository: &str) -> Response<$return_type> {
                 let method = format!("repos/{}/{}/{}", owner, repository, $endpoint);
-                let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, 1)?;
+                let (text, limit_remaining_reset, next_page) =
+                    self.api_get_call(&method, 1, 100)?;
 
                 Ok(GitHubApiResult {
                     result: parse_json(&text)?,
@@ -73,7 +74,8 @@ macro_rules! make_paginated_api {
                 page: u64,
             ) -> Response<Vec<$return_type>> {
                 let method = format!("repos/{}/{}/{}", owner, repository, $endpoint);
-                let (text, limit_remaining_reset, next_page) = self.api_get_call(&method, page)?;
+                let (text, limit_remaining_reset, next_page) =
+                    self.api_get_call(&method, page, 100)?;
 
                 Ok(GitHubApiResult {
                     result: parse_json(&text)?,
@@ -110,6 +112,13 @@ macro_rules! make_paginated_api {
                     repository: repository.to_string(),
                     next_page: Some(1),
                 }
+            }
+
+            pub fn has_items(&self) -> Result<bool, GitHubApiError> {
+                let method = format!("repos/{}/{}/{}", self.owner, self.repository, $endpoint);
+                let (text, _, _) = self.github_api.api_get_call(&method, 1, 1)?;
+                let response: Vec<$return_type> = parse_json(&text)?;
+                Ok(!response.is_empty())
             }
         }
 
